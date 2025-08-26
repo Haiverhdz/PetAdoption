@@ -1,9 +1,9 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
-import { OAuth2Strategy as GoogleStrategy, Profile } from "passport-google-oauth";
+import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
 import bcrypt from "bcrypt";
-import User, { IUser } from "../models/Users.model";
+import User from "../models/User";
 import { connectDB } from "./mongodb";
 
 // ---------------------- LOCAL STRATEGY ----------------------
@@ -33,15 +33,14 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: "/api/auth/google/callback",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL!, // <- desde .env
     },
-    async (accessToken: string, refreshToken: string, profile: Profile, done) => {
+    async (_accessToken: string, _refreshToken: string, profile: Profile, done) => {
       try {
         await connectDB();
         let user = await User.findOne({ googleId: profile.id });
 
         if (!user) {
-          // Crear nuevo usuario
           user = await User.create({
             name: profile.displayName,
             email: profile.emails?.[0].value!,
@@ -85,7 +84,7 @@ passport.use(
 );
 
 // ---------------------- SERIALIZE / DESERIALIZE ----------------------
-passport.serializeUser<IUser>((user, done) => {
+passport.serializeUser((user: any, done) => {
   done(null, user._id);
 });
 
