@@ -1,11 +1,11 @@
-import type { NextConfig } from 'neclext';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  experimental: {
-    fontLoaders: [
-      { loader: '@next/font/google', options: {susets: ['latin']}},
-    ],
-  },
+  fontLoaders: [
+    { loader: '@next/font/google', options: {susets: ['latin']}},
+  ],
+  reactStrictMode: true,
 };
 
 export default nextConfig;
+
