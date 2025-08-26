@@ -3,7 +3,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
 import bcrypt from "bcrypt";
-import User from "../models/User";
+import User from "../models/Users.model";
 import { connectDB } from "./mongodb";
 
 // ---------------------- LOCAL STRATEGY ----------------------
