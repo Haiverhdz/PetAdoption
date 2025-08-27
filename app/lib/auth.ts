@@ -1,16 +1,10 @@
-// /lib/auth.ts
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { connectDB } from "../lib/mongodb";
 import User from "../models/Users.model";
 import bcrypt from "bcrypt";
-
-interface TokenType {
-  id?: string;
-  name?: string;
-  role?: "user" | "admin";
-}
+import { JWT } from "next-auth/jwt";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -38,24 +32,21 @@ export const authOptions: NextAuthOptions = {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
-          role: user.role,
+          role: user.role as "user" | "admin",
         };
       },
     }),
   ],
 
-  session: {
-    strategy: "jwt",
-  },
+  session: { strategy: "jwt" },
 
-  pages: {
-    signIn: "/login",
-  },
+  pages: { signIn: "/login" },
 
   callbacks: {
     async jwt({ token, user, account, profile }) {
       await connectDB();
 
+      // Login Google
       if (account?.provider === "google" && profile?.email) {
         const email = profile.email.toLowerCase();
         let existing = await User.findOne({
@@ -79,20 +70,21 @@ export const authOptions: NextAuthOptions = {
         token.role = existing.role as "user" | "admin";
       }
 
-      if (user?.id) {
+      // Login Credentials
+      if (user) {
         token.id = user.id;
         token.name = user.name;
-        token.role = user.role as "user" | "admin";
+        token.role = user.role;
       }
 
-      return token as TokenType;
+      return token;
     },
 
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id!;
-        session.user.name = token.name!;
-        session.user.role = token.role === "admin" ? "admin" : "user";
+        session.user.id = token.id as string;
+        session.user.name = token.name as string;
+        session.user.role = token.role as "user" | "admin";
       }
       return session;
     },

@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
@@ -29,10 +28,12 @@ export default function Header() {
     if (status === "loading") return <span>Cargando...</span>;
 
     if (session?.user) {
+      const role = (session.user.role as "user" | "admin") ?? "user";
+
       return (
         <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
           <span className="font-medium">Hola, {session.user.name}</span>
-          {session.user.role === "admin" && (
+          {role === "admin" && (
             <Link
               href="/dashboard"
               onClick={closeMenu}
@@ -43,7 +44,7 @@ export default function Header() {
           )}
           <button
             onClick={() => {
-              signOut();
+              signOut({ callbackUrl: "/" });
               closeMenu();
             }}
             className="px-3 py-1 rounded-lg bg-red-500 hover:bg-red-600 transition"
@@ -77,7 +78,6 @@ export default function Header() {
   return (
     <header className="bg-blue-500 text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-3">
           <Image src="/images/logo.PNG" alt="PetAdopt Logo" width={55} height={55} />
           <span className="text-2xl font-bold">PetAdopt</span>
