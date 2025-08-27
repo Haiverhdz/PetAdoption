@@ -13,11 +13,11 @@ export interface IUser extends Document {
 
 const userSchema = new Schema<IUser>(
   {
-    name: { type: String, required: true },
+    name: { type: String},
     email: { type: String, required: true, unique: true },
     password: { type: String },
     role: { type: String, enum: ["user", "admin"], default: "user" },
-    googleId: { type: String, unique: true, sparse: true }, // <- para Google login
+    googleId: { type: String, unique: true, sparse: true },
   },
   { timestamps: true }
 );

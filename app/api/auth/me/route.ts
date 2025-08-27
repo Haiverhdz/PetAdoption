@@ -1,17 +1,26 @@
 import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function GET(req: Request) {
-  const token = req.headers.get("cookie"); 
+  try {
+    const cookie = req.headers.get("cookie") || "";
+    const match = cookie.match(/authToken=([^;]+)/);
+    const token = match ? match[1] : null;
 
-  if (!token) {
+    if (!token) return NextResponse.json({ user: null }, { status: 401 });
+
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      id: string;
+      name: string;
+      email: string;
+      role: string;
+    };
+
+    return NextResponse.json({ user: decoded });
+  } catch (err) {
+    console.error("JWT inválido:", err);
     return NextResponse.json({ user: null }, { status: 401 });
   }
-  const user = {
-    id: "123",
-    name: "Haiver",
-    email: "haiver@example.com",
-    role: "user",
-  };
-
-  return NextResponse.json({ user });
 }

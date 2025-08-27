@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -10,32 +11,32 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Login con credenciales
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+    const res = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
 
-      const data = await res.json();
-      if (res.ok) {
-        // Si usas JWT, guardarlo aquí
-        // localStorage.setItem("token", data.token);
-        router.push("/"); // redirige al inicio
-      } else {
-        setError(data.message || "Email o contraseña incorrectos");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Error de conexión con el servidor");
-    } finally {
-      setLoading(false);
+    if (res?.error) {
+      setError("Email o contraseña incorrectos");
+    } else {
+      // recarga la página para que useSession() tenga los datos
+      router.push("/");
     }
+
+    setLoading(false);
+  };
+
+  // Login con Google
+  const handleGoogleLogin = () => {
+    // dejamos que NextAuth redirija automáticamente
+    signIn("google", { callbackUrl: "/" });
   };
 
   return (
@@ -73,12 +74,18 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-4 text-center text-gray-600">
-          ¿No tienes cuenta?{" "}
-          <a href="/register" className="text-blue-600 hover:underline">
-            Regístrate
-          </a>
-        </p>
+        <div className="my-6 flex items-center">
+          <hr className="flex-grow border-gray-300" />
+          <span className="px-3 text-gray-500 text-sm">o</span>
+          <hr className="flex-grow border-gray-300" />
+        </div>
+
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full border border-gray-300 py-2 rounded hover:bg-gray-100 transition"
+        >
+          Iniciar sesión con Google
+        </button>
       </div>
     </div>
   );

@@ -1,40 +1,52 @@
-import { NextResponse } from "next/server";
-import User from "../../../models/Users.model";
-import { connectDB } from "../../../lib/mongodb";
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import { connectDB } from "../../../lib/mongodb";
+import User from "../../../models/Users.model";
 
-export async function POST(req: Request) {
-  try {
-    const { email, password } = await req.json();
+const handler = NextAuth({
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
 
-    await connectDB();
-    const user = await User.findOne({ email });
-    if (!user) {
-      return NextResponse.json({ message: "Usuario no encontrado" }, { status: 401 });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return NextResponse.json({ message: "Contraseña incorrecta" }, { status: 401 });
-    }
-
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET!, {
-      expiresIn: "7d",
-    });
-
-    return NextResponse.json({
-      message: "Autenticado",
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
       },
-      token,
-    });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ message: "Error en el servidor" }, { status: 500 });
-  }
-}
+      async authorize(credentials) {
+        await connectDB();
+
+        const user = await User.findOne({ email: credentials?.email });
+        if (!user) throw new Error("Usuario no encontrado");
+
+        if (!user.password) {
+          throw new Error("Este usuario se registró con Google. Inicia sesión con Google.");
+        }
+
+        const isMatch = await bcrypt.compare(credentials!.password, user.password);
+        if (!isMatch) throw new Error("Contraseña incorrecta");
+
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        };
+      },
+    }),
+  ],
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: "/login",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+});
+
+export { handler as GET, handler as POST };

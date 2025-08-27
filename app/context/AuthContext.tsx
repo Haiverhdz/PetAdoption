@@ -1,44 +1,59 @@
 "use client";
+import { createContext, useContext, useEffect, useState } from "react";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-
-type User = {
+interface User {
   name: string;
-  role: string;
-} | null;
+  email: string;
+  role?: string;
+}
 
-type AuthContextType = {
-  user: User;
+interface AuthContextType {
+  user: User | null;
   loading: boolean;
-  login: (userData: User) => void;
+  login: (token: string) => Promise<void>;
   logout: () => void;
-};
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User>(null);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await fetch("/api/auth/me");
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        }
-      } catch (err) {
-        console.error("Error cargando usuario:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, []);  
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.user) {
+            setUser(data.user);
+          } else {
+            localStorage.removeItem("authToken");
+          }
+        })
+        .catch(() => localStorage.removeItem("authToken"))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
-  const login = (userData: User) => setUser(userData);
-  const logout = () => setUser(null);
+  const login = async (token: string) => {
+    localStorage.setItem("authToken", token);
+    const res = await fetch("/api/auth/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    setUser(data.user || null);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("authToken");
+    setUser(null);
+  };
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout }}>
@@ -48,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth debe usarse dentro de AuthProvider");
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 };
