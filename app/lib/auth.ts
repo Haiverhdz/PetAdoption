@@ -11,6 +11,7 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -46,14 +47,15 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    // JWT: guarda info de usuario
+    // JWT: guarda info del usuario
     async jwt({ token, user, account, profile }) {
       await connectDB();
 
-      // Login con Google
       if (account?.provider === "google" && profile?.email) {
         const email = profile.email.toLowerCase();
-        let existing = await User.findOne({ $or: [{ email }, { googleId: account.providerAccountId }] });
+        let existing = await User.findOne({
+          $or: [{ email }, { googleId: account.providerAccountId }],
+        });
 
         if (!existing) {
           existing = await User.create({
@@ -67,45 +69,27 @@ export const authOptions: NextAuthOptions = {
           await existing.save();
         }
 
-        token.sub = existing._id.toString(); // clave para Google
+        token.id = existing._id.toString();
         token.name = existing.name;
         token.role = existing.role;
-        token.email = existing.email;
       }
 
-      // Login con Credenciales
-      if (user?.id) {
-        token.sub = user.id;
+      if (user) {
+        token.id = user.id;
         token.name = user.name;
         token.role = user.role;
-        token.email = user.email;
       }
 
       return token;
     },
 
-    // Sesión: lo que ve el frontend
+    // Sesión: lo que llega al frontend
     async session({ session, token }) {
-      await connectDB();
-
       if (session.user) {
-        // Busca usuario en DB por token.sub (Google) o email
-        const user = await User.findOne({
-          $or: [{ _id: token.sub }, { email: token.email }],
-        });
-
-        if (user) {
-          session.user.id = user._id.toString();
-          session.user.name = user.name;
-          session.user.role = user.role;
-        } else {
-          // Fallback
-          session.user.id = token.sub as string;
-          session.user.name = token.name as string;
-          session.user.role = token.role as string;
-        }
+        session.user.id = token.id as string;
+        session.user.name = token.name as string;
+        session.user.role = token.role as string;
       }
-
       return session;
     },
   },

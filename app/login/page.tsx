@@ -26,17 +26,26 @@ export default function LoginPage() {
     if (res?.error) {
       setError("Email o contraseña incorrectos");
     } else {
-      // recarga la página para que useSession() tenga los datos
-      router.push("/");
+      // Fuerza recarga de la página para que useSession() tenga los datos
+      router.replace("/");
     }
 
     setLoading(false);
   };
 
   // Login con Google
-  const handleGoogleLogin = () => {
-    // dejamos que NextAuth redirija automáticamente
-    signIn("google", { callbackUrl: "/" });
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    // redirige al callbackUrl y recarga la sesión automáticamente
+    const res = await signIn("google", { redirect: false });
+
+    if (res?.error) {
+      setError("No se pudo iniciar sesión con Google");
+    } else {
+      router.replace("/"); // recarga la página para actualizar session
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -82,9 +91,10 @@ export default function LoginPage() {
 
         <button
           onClick={handleGoogleLogin}
+          disabled={loading}
           className="w-full border border-gray-300 py-2 rounded hover:bg-gray-100 transition"
         >
-          Iniciar sesión con Google
+          {loading ? "Redirigiendo..." : "Iniciar sesión con Google"}
         </button>
       </div>
     </div>

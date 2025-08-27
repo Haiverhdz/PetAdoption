@@ -9,9 +9,7 @@ import { useSession, signOut } from "next-auth/react";
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session, status } = useSession();
-  console.log("SESSION:", session);
   const pathname = usePathname();
-  
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -85,7 +83,6 @@ export default function Header() {
           <span className="text-2xl font-bold">PetAdopt</span>
         </Link>
 
-        {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
           <NavLink href="/">Inicio</NavLink>
           <NavLink href="/pets">Mascotas</NavLink>
@@ -93,7 +90,6 @@ export default function Header() {
           <AuthButtons />
         </nav>
 
-        {/* Mobile button */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Abrir menú"
@@ -105,7 +101,6 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Mobile nav */}
       {menuOpen && (
         <nav className="md:hidden bg-blue-600 px-4 py-3 flex flex-col gap-4 animate-fadeIn">
           <NavLink href="/">Inicio</NavLink>
@@ -117,4 +112,3 @@ export default function Header() {
     </header>
   );
 }
-
