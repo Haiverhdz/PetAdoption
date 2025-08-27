@@ -1,3 +1,4 @@
+// /lib/auth.ts
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -11,7 +12,6 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -47,19 +47,16 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    // JWT: guarda info del usuario
     async jwt({ token, user, account, profile }) {
       await connectDB();
 
       if (account?.provider === "google" && profile?.email) {
         const email = profile.email.toLowerCase();
-        let existing = await User.findOne({
-          $or: [{ email }, { googleId: account.providerAccountId }],
-        });
+        let existing = await User.findOne({ $or: [{ email }, { googleId: account.providerAccountId }] });
 
         if (!existing) {
           existing = await User.create({
-            name: profile.name || profile.given_name || "Usuario Google",
+            name: profile.name || "Usuario Google", 
             email,
             googleId: account.providerAccountId,
             role: "user",
@@ -74,7 +71,7 @@ export const authOptions: NextAuthOptions = {
         token.role = existing.role;
       }
 
-      if (user) {
+      if (user?.id) {
         token.id = user.id;
         token.name = user.name;
         token.role = user.role;
@@ -83,7 +80,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
 
-    // Sesión: lo que llega al frontend
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
