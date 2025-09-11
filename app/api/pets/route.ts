@@ -29,6 +29,8 @@ const pets = [
   vaccines: ["Rabia", "Parvovirus"],image: "/images/pets/cat2.JPG" },
   { id: 14, name: "Jamaica", type: "Perro", age: "9 años", breed: "Criolla", description: "Jamaica es una perrita muy tierna y familiar.",
   vaccines: ["Rabia", "Parvovirus"],image: "/images/pets/dog12.JPG" },
+  { id: 15, name: "Sammy", type: "Perro", age: "7 años", breed: "Shitzu", description: "Shitzu es una perrita muy tierna y familiar.",
+  vaccines: ["Rabia", "Parvovirus"],image: "/images/pets/dog13.jpeg" },
   
 ];
 
