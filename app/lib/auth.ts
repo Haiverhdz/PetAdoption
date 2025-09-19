@@ -1,61 +1,58 @@
-// app/lib/auth.ts
-import { headers, cookies } from "next/headers";
-import { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
+import User from "../models/Users.model";
+import bcrypt from "bcrypt";
 
+interface TokenType {
+  id?: string;
+  name?: string;
+  role?: "user" | "admin";
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        const user = credentials?.email
-          ? { id: "1", name: "Haiver", email: credentials.email }
-          : null;
-        return user;
-      },
-    }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-  ],
-  session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
-};
+    export const authOptions: NextAuthOptions = {
 
-export interface Mascota {
-  id: string;
-  nombre: string;
-  tipo: string;
-  status?: string;
-}
+      if (account?.provider === "google" && profile?.email) {
+        const email = profile.email.toLowerCase();
+        let existing = await User.findOne({ $or: [{ email }, { googleId: account.providerAccountId }] });
+        let existing = await User.findOne({
+          $or: [{ email }, { googleId: account.providerAccountId }],
+        });
 
-export async function fetchMisMascotas(accessToken?: string) {
-  const host = headers().get("host")!;
-  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-  const url = `${protocol}://${host}/api/mis-mascotas`;
+        if (!existing) {
+          existing = await User.create({
+            name: profile.name || "Usuario Google", 
+            name: profile.name || "Usuario Google",
+            email,
+            googleId: account.providerAccountId,
+            role: "user",
+    export const authOptions: NextAuthOptions = {
 
-  const cookieStore = cookies();
+        token.id = existing._id.toString();
+        token.name = existing.name;
+        token.role = existing.role;
+        token.role = existing.role as "user" | "admin";
+      }
 
-  const res = await fetch(url, {
-    headers: {
-      Cookie: accessToken
-        ? `next-auth.session-token=${accessToken}`
-        : cookieStore.toString(),
+      if (user?.id) {
+        token.id = user.id;
+        token.name = user.name;
+        token.role = user.role;
+        token.role = user.role as "user" | "admin";
+      }
+
+      return token;
+      return token as TokenType;
     },
-    cache: "no-store",
-  });
 
-  if (!res.ok) {
-    return { ok: false, status: res.status, mascotas: [] as Mascota[] };
-  }
-
-  const mascotas: Mascota[] = await res.json();
-  return { ok: true, status: res.status, mascotas };
-}
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.name = token.name as string;
+        session.user.role = token.role as string;
+        session.user.id = token.id!;
+        session.user.name = token.name!;
+        session.user.role = token.role === "admin" ? "admin" : "user";
+      }
+      return session;
+    };
