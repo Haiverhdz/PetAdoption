@@ -1,91 +1,46 @@
-import { NextAuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { connectDB } from "../lib/mongodb";
-import User from "../models/Users.model";
-import bcrypt from "bcrypt";
+// app/mis-mascotas/page.tsx
+import { headers, cookies } from "next/headers";
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        await connectDB();
-        if (!credentials?.email || !credentials?.password) return null;
+export default async function MisMascotasPage() {
+  // obtenemos host/protocolo
+  const host = headers().get("host")!;
+  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+  const url = `${protocol}://${host}/api/mis-mascotas`;
 
-        const user = await User.findOne({ email: credentials.email.toLowerCase() });
-        if (!user || !user.password) return null;
+  // pasamos las cookies actuales al fetch para que next-auth las lea
+  const cookieStore = cookies();
 
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) return null;
-
-        return {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-          role: user.role as "user" | "admin",
-        };
-      },
-    }),
-  ],
-
-  session: { strategy: "jwt" },
-
-  pages: { signIn: "/login" },
-
-  callbacks: {
-    async jwt({ token, user, account, profile }) {
-      await connectDB();
-
-      if (account?.provider === "google" && profile?.email) {
-        const email = profile.email.toLowerCase();
-        let existing = await User.findOne({
-          $or: [{ email }, { googleId: account.providerAccountId }],
-        });
-
-        if (!existing) {
-          existing = await User.create({
-            name: profile.name || "Usuario Google",
-            email,
-            googleId: account.providerAccountId,
-            role: "user",
-          });
-        } else if (!existing.googleId) {
-          existing.googleId = account.providerAccountId;
-          await existing.save();
-        }
-
-        token.id = existing._id.toString();
-        token.name = existing.name;
-        token.role = existing.role as "user" | "admin";
-      }
-
-      if (user) {
-        token.id = user.id;
-        token.name = user.name;
-        token.role = user.role;
-      }
-
-      return token;
+  const res = await fetch(url, {
+    headers: {
+      Cookie: cookieStore.toString(), // esto pasa la cookie de next-auth al API
     },
+    cache: "no-store",
+  });
 
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.name = token.name as string;
-        session.user.role = token.role as "user" | "admin";
-      }
-      return session;
-    },
-  },
+  if (!res.ok) {
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold">Mis Mascotas</h1>
+        <p className="text-red-500">
+          No autorizado o error ({res.status})
+        </p>
+      </div>
+    );
+  }
 
-  secret: process.env.NEXTAUTH_SECRET,
-};
+  const adopciones = await res.json();
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Mis Mascotas</h1>
+      <ul className="space-y-3">
+        {adopciones.map((adop: any) => (
+          <li key={adop._id} className="border rounded p-3">
+            <p className="font-semibold">{adop.name}</p>
+            <p className="text-sm text-gray-600">{adop.status}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
