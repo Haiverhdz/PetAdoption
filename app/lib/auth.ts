@@ -4,7 +4,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { connectDB } from "../lib/mongodb";
 import User from "../models/Users.model";
 import bcrypt from "bcrypt";
-import { JWT } from "next-auth/jwt";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -46,7 +45,6 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account, profile }) {
       await connectDB();
 
-      // Login Google
       if (account?.provider === "google" && profile?.email) {
         const email = profile.email.toLowerCase();
         let existing = await User.findOne({
@@ -70,7 +68,6 @@ export const authOptions: NextAuthOptions = {
         token.role = existing.role as "user" | "admin";
       }
 
-      // Login Credentials
       if (user) {
         token.id = user.id;
         token.name = user.name;

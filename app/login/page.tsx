@@ -11,7 +11,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Login con credenciales
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -26,7 +25,6 @@ export default function LoginPage() {
     if (res?.error) {
       setError("Email o contraseña incorrectos");
     } else {
-      // Fuerza recarga de la página para que useSession() tenga los datos
       router.replace("/");
     }
 
@@ -89,13 +87,13 @@ export default function LoginPage() {
           <hr className="flex-grow border-gray-300" />
         </div>
 
-        <button
+        {/* <button
           onClick={handleGoogleLogin}
           disabled={loading}
           className="w-full border border-gray-300 py-2 rounded hover:bg-gray-100 transition"
         >
           {loading ? "Redirigiendo..." : "Iniciar sesión con Google"}
-        </button>
+        </button> */}
       </div>
     </div>
   );

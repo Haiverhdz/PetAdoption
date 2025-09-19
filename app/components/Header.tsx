@@ -12,12 +12,20 @@ export default function Header() {
 
   const closeMenu = () => setMenuOpen(false);
 
-  const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+  const NavLink = ({
+    href,
+    children,
+  }: {
+    href: string;
+    children: React.ReactNode;
+  }) => (
     <Link
       href={href}
       onClick={closeMenu}
-      className={`transition ${
-        pathname === href ? "text-yellow-300 font-semibold" : "hover:text-blue-200"
+      className={`transition px-3 py-1 rounded-lg ${
+        pathname === href
+          ? "text-yellow-300 font-semibold"
+          : "hover:text-blue-200"
       }`}
     >
       {children}
@@ -32,16 +40,8 @@ export default function Header() {
 
       return (
         <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-          <span className="font-medium">Hola, {session.user.name}</span>
-          {role === "admin" && (
-            <Link
-              href="/dashboard"
-              onClick={closeMenu}
-              className="bg-green-600 px-3 py-1 rounded-lg hover:bg-green-700 transition"
-            >
-              Dashboard
-            </Link>
-          )}
+          <NavLink href="/perfil">Perfil</NavLink>
+          {role === "admin" && <NavLink href="/dashboard">Dashboard</NavLink>}
           <button
             onClick={() => {
               signOut({ callbackUrl: "/" });
@@ -79,11 +79,26 @@ export default function Header() {
     <header className="bg-blue-500 text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
         <Link href="/" className="flex items-center gap-3">
-          <Image src="/images/logo.PNG" alt="PetAdopt Logo" width={55} height={55} />
+          <Image
+            src="/images/logo.PNG"
+            alt="PetAdopt Logo"
+            width={55}
+            height={55}
+          />
           <span className="text-2xl font-bold">PetAdopt</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
+          {/* 👇 Aquí controlas el “Hola” de primero */}
+          {status === "loading" ? (
+            <span className="font-medium">Cargando...</span>
+          ) : session?.user ? (
+            <span className="font-medium">Hola, {session.user.name}</span>
+          ) : (
+            <span className="font-medium">Hola invitado</span>
+          )}
+
+          {/* Tus enlaces */}
           <NavLink href="/">Inicio</NavLink>
           <NavLink href="/pets">Mascotas</NavLink>
           <NavLink href="/about">Sobre Nosotros</NavLink>
@@ -95,14 +110,34 @@ export default function Header() {
           aria-label="Abrir menú"
           className="md:hidden flex flex-col gap-1 focus:outline-none"
         >
-          <span className={`w-6 h-0.5 bg-white transition ${menuOpen ? "rotate-45 translate-y-2" : ""}`}></span>
-          <span className={`w-6 h-0.5 bg-white transition ${menuOpen ? "opacity-0" : ""}`}></span>
-          <span className={`w-6 h-0.5 bg-white transition ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`}></span>
+          <span
+            className={`w-6 h-0.5 bg-white transition ${
+              menuOpen ? "rotate-45 translate-y-2" : ""
+            }`}
+          ></span>
+          <span
+            className={`w-6 h-0.5 bg-white transition ${
+              menuOpen ? "opacity-0" : ""
+            }`}
+          ></span>
+          <span
+            className={`w-6 h-0.5 bg-white transition ${
+              menuOpen ? "-rotate-45 -translate-y-2" : ""
+            }`}
+          ></span>
         </button>
       </div>
 
       {menuOpen && (
         <nav className="md:hidden bg-blue-600 px-4 py-3 flex flex-col gap-4 animate-fadeIn">
+          {status === "loading" ? (
+            <span className="font-medium">Cargando...</span>
+          ) : session?.user ? (
+            <span className="font-medium">Hola, {session.user.name}</span>
+          ) : (
+            <span className="font-medium">Hola invitado</span>
+          )}
+
           <NavLink href="/">Inicio</NavLink>
           <NavLink href="/pets">Mascotas</NavLink>
           <NavLink href="/about">Sobre Nosotros</NavLink>
