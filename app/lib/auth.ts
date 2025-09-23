@@ -1,90 +1,85 @@
+import { headers, cookies } from "next/headers";
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { connectDB } from "../lib/mongodb";
-import User from "../models/Users.model";
-import bcrypt from "bcrypt";
+import User from "../models/Users.model"; 
+import bcrypt from "bcryptjs";
 
-interface TokenType {
-  id?: string;
-  name?: string;
-  role?: "user" | "admin";
+export interface Mascota {
+  id: string;
+  nombre: string;
+  tipo: string;
+  status?: string;
 }
-import { JWT } from "next-auth/jwt";
+
+export type FetchMascotasResult = {
+  ok: boolean;
+  status: number;
+  mascotas: Mascota[];
+};
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
     CredentialsProvider({
-      name: "Credentials",
+      name: "Credenciales",
       credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
+        email: { label: "Correo", type: "email" },
+        password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
-        await connectDB();
-        if (!credentials?.email || !credentials?.password) return null;
-
+        if (!credentials?.email || !credentials.password) return null;
         const user = await User.findOne({ email: credentials.email.toLowerCase() });
-        if (!user || !user.password) return null;
-
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) return null;
-
+        if (!user) return null;
+        const valid = await bcrypt.compare(credentials.password, user.password);
+        if (!valid) return null;
         return {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
           role: user.role,
-          role: user.role as "user" | "admin",
         };
       },
     }),
+
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
-
-  session: {
-    strategy: "jwt",
-  },
-  session: { strategy: "jwt" },
-
-  pages: {
-    signIn: "/login",
-  },
-  pages: { signIn: "/login" },
 
   callbacks: {
     async jwt({ token, user, account, profile }) {
-      await connectDB();
-
       if (account?.provider === "google" && profile?.email) {
         const email = profile.email.toLowerCase();
-        let existing = await User.findOne({
-        token.role = existing.role as "user" | "admin";
+        const existing = await User.findOne({ email });
+        if (existing) {
+          token.id = existing._id.toString();
+          token.name = existing.name;
+          token.email = existing.email;
+          token.role = existing.role; 
+        }
       }
 
       if (user?.id) {
-      if (user) {
         token.id = user.id;
         token.name = user.name;
-        token.role = user.role as "user" | "admin";
-        token.role = user.role;
+        token.email = user.email;
+        token.role = user.role; 
       }
 
-      return token as TokenType;
       return token;
     },
 
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id!;
-        session.user.name = token.name!;
-        session.user.role = token.role === "admin" ? "admin" : "user";
-        session.user.id = token.id as string;
-        session.user.name = token.name as string;
-        session.user.role = token.role as "user" | "admin";
+      if (token?.id) {
+        session.user = {
+          id: token.id as string,
+          name: token.name as string,
+          email: token.email as string,
+          role: token.role as string,
+        };
       }
       return session;
     },
+  },
+};
