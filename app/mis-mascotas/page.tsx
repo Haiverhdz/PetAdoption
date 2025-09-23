@@ -1,3 +1,4 @@
+// app/mis-mascotas/page.tsx
 import { fetchMisMascotas, Mascota } from "../lib/auth";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../lib/auth";
@@ -5,9 +6,10 @@ import { redirect } from "next/navigation";
 
 export default async function MisMascotasPage() {
   const session = await getServerSession(authOptions);
+
   if (!session) redirect("/login");
 
-  const { ok, status, mascotas } = await fetchMisMascotas(session.accessToken);
+  const { ok, status, mascotas } = await fetchMisMascotas();
 
   if (!ok) {
     return (
