@@ -1,9 +1,16 @@
-import type { NextAuthOptions } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { connectDB } from "../lib/mongodb";
+import User from "../models/Users.model";
 import bcrypt from "bcrypt";
-import { connectDB } from "./mongodb";       
-import User from "../models/Users.model"; 
+
+interface TokenType {
+  id?: string;
+  name?: string;
+  role?: "user" | "admin";
+}
+import { JWT } from "next-auth/jwt";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -31,86 +38,53 @@ export const authOptions: NextAuthOptions = {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          role: user.role,
           role: user.role as "user" | "admin",
         };
       },
     }),
   ],
+
   session: {
     strategy: "jwt",
   },
+  session: { strategy: "jwt" },
+
   pages: {
     signIn: "/login",
   },
+  pages: { signIn: "/login" },
+
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = (user as any).id;
-        token.name = user.name;
-        token.role = (user as any).role;
+    async jwt({ token, user, account, profile }) {
+      await connectDB();
+
+      if (account?.provider === "google" && profile?.email) {
+        const email = profile.email.toLowerCase();
+        let existing = await User.findOne({
+        token.role = existing.role as "user" | "admin";
       }
+
+      if (user?.id) {
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.role = user.role as "user" | "admin";
+        token.role = user.role;
+      }
+
+      return token as TokenType;
       return token;
     },
+
     async session({ session, token }) {
       if (session.user) {
+        session.user.id = token.id!;
+        session.user.name = token.name!;
+        session.user.role = token.role === "admin" ? "admin" : "user";
         session.user.id = token.id as string;
         session.user.name = token.name as string;
         session.user.role = token.role as "user" | "admin";
       }
       return session;
     },
-  },
-};
-
-import { headers, cookies } from "next/headers";
-
-export interface Mascota {
-  id: string;
-  nombre: string;
-  tipo: string;
-  status?: string;
-}
-
-export type FetchMascotasResult = {
-  ok: boolean;
-  status: number;
-  mascotas: Mascota[];
-};
-
-export async function fetchMisMascotas(): Promise<FetchMascotasResult> {
-  try {
-    const h = headers();
-    const host = h.get("host");
-    if (!host) {
-      return { ok: false, status: 500, mascotas: [] };
-    }
-
-    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-    const url = `${protocol}://${host}/api/mis-mascotas`;
-
-    const cookieStore = cookies();
-    const cookieHeader =
-      typeof (cookieStore as any)?.toString === "function"
-        ? (cookieStore as any).toString()
-        : (cookieStore.getAll?.() ?? [])
-            .map((c: any) => `${c.name}=${c.value}`)
-            .join("; ");
-
-    const res = await fetch(url, {
-      headers: {
-        Cookie: cookieHeader,
-      },
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      return { ok: false, status: res.status, mascotas: [] };
-    }
-
-    const mascotas = (await res.json()) as Mascota[];
-    return { ok: true, status: res.status, mascotas };
-  } catch (err) {
-    console.error("fetchMisMascotas error:", err);
-    return { ok: false, status: 500, mascotas: [] };
-  }
-}
