@@ -5,6 +5,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import User from "../models/Users.model";
 
+type Role = "user" | "admin";
+
 export interface Mascota {
   id: string;
   nombre: string;
@@ -81,7 +83,7 @@ export const authOptions: NextAuthOptions = {
           id: token.id as string,
           name: token.name as string,
           email: token.email as string,
-          role: token.role as string, 
+          role: token.role as Role, 
         };
       }
       return session;
