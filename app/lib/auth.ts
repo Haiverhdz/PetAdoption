@@ -31,20 +31,25 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
 
-        const user = await User.findOne({
-          email: credentials.email.toLowerCase(),
-        });
-        if (!user) return null;
+        try {
+          const user = await User.findOne({
+            email: credentials.email.toLowerCase(),
+          });
+          if (!user) return null;
 
-        const valid = await bcrypt.compare(credentials.password, user.password);
-        if (!valid) return null;
+          const valid = await bcrypt.compare(credentials.password, user.password);
+          if (!valid) return null;
 
-        return {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
+          return {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error("Error in authorize:", error);
+          return null;
+        }
       },
     }),
 
@@ -54,41 +59,66 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+
+  pages: {
+    signIn: "/login",
+    error: "/login",
+  },
+
+  secret: process.env.NEXTAUTH_SECRET,
+
   callbacks: {
     async jwt({ token, user, account, profile }) {
-      if (account?.provider === "google" && profile?.email) {
-        const email = profile.email.toLowerCase();
-        const existing = await User.findOne({ email });
-        if (existing) {
-          token.id = existing._id.toString();
-          token.name = existing.name;
-          token.email = existing.email;
-          token.role = existing.role;
+      try {
+        if (account?.provider === "google" && profile?.email) {
+          const email = profile.email.toLowerCase();
+          const existing = await User.findOne({ email });
+          if (existing) {
+            token.id = existing._id.toString();
+            token.name = existing.name;
+            token.email = existing.email;
+            token.role = existing.role;
+          }
         }
-      }
 
-      if (user?.id) {
-        token.id = user.id;
-        token.name = user.name;
-        token.email = user.email;
-        token.role = user.role;
-      }
+        if (user?.id) {
+          token.id = user.id;
+          token.name = user.name;
+          token.email = user.email;
+          token.role = user.role;
+        }
 
-      return token;
+        return token;
+      } catch (error) {
+        console.error("Error in jwt callback:", error);
+        return token;
+      }
     },
 
     async session({ session, token }) {
-      if (token?.id) {
-        session.user = {
-          id: token.id as string,
-          name: token.name as string,
-          email: token.email as string,
-          role: token.role as Role, 
-        };
+      try {
+        if (token?.id) {
+          session.user = {
+            id: token.id as string,
+            name: token.name as string,
+            email: token.email as string,
+            role: token.role as Role, 
+          };
+        }
+        return session;
+      } catch (error) {
+        console.error("Error in session callback:", error);
+        return session;
       }
-      return session;
     },
   },
+
+  // Configuración para deployment
+  useSecureCookies: process.env.NODE_ENV === 'production',
 };
 
 export async function fetchMisMascotas(): Promise<FetchMascotasResult> {
@@ -102,9 +132,10 @@ export async function fetchMisMascotas(): Promise<FetchMascotasResult> {
     const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
     const url = `${protocol}://${host}/api/mis-mascotas`;
 
-    const cookieStore = cookies();
-    const cookieHeader = (cookieStore.getAll?.() ?? [])
-      .map((c: any) => `${c.name}=${c.value}`)
+    const cookieStore = await cookies();
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((c) => `${c.name}=${c.value}`)
       .join("; ");
 
     const res = await fetch(url, {

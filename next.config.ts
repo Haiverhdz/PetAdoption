@@ -1,10 +1,11 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  fontLoaders: [
-    { loader: '@next/font/google', options: {susets: ['latin']}},
-  ],
   reactStrictMode: true,
+  serverExternalPackages: ['mongoose'],
+  images: {
+    domains: ['res.cloudinary.com'],
+  },
 };
 
 export default nextConfig;
