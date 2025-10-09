@@ -76,14 +76,17 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-blue-500 text-white shadow-md">
+    <header className="fixed top-4 left-1/2 -translate-x-1/2 
+    w-[95%] md:w-[1120px] h-[70px] 
+    rounded-2xl bg-white/20 backdrop-blur-md shadow-lg 
+    text-blue-700 transition-all duration-300 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
         <Link href="/" className="flex items-center gap-3">
           <Image
             src="/images/logo.PNG"
             alt="PetAdopt Logo"
-            width={55}
-            height={55}
+            width={45}
+            height={45}
           />
           <span className="text-2xl font-bold">PetAdopt</span>
         </Link>
@@ -129,7 +132,7 @@ export default function Header() {
       </div>
 
       {menuOpen && (
-        <nav className="md:hidden bg-blue-600 px-4 py-3 flex flex-col gap-4 animate-fadeIn">
+        <nav className="md:hidden bg-[radial-gradient(circle_at_top_left,_#9fc7d3,_#5c7760,_#f5e9b5)] rounded-lg px-4 py-3 flex flex-col gap-4 animate-fadeIn">
           {status === "loading" ? (
             <span className="font-medium">Cargando...</span>
           ) : session?.user ? (

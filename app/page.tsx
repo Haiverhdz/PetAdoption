@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <section className="bg-gray-50 py-20">
+    <section className="bg-transparent py-20">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 items-center gap-10 px-6">
         
         <div className="text-center md:text-left">
@@ -15,7 +15,9 @@ export default function HomePage() {
             Tenemos perros, gatos y más esperando por ti.
           </p>
           <Link href="/pets">
-            <button className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition">
+            <button className="mt-6 px-6 py-3 rounded-lg text-white font-semibold shadow-lg 
+              bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-400 
+              hover:scale-105 hover:shadow-xl transition-all duration-300">
               Ver Mascotas
             </button>
           </Link>
@@ -23,11 +25,11 @@ export default function HomePage() {
 
         <div className="flex justify-center">
           <Image
-            src="/images/hero-pet.jpg"
+            src="/images/hero-pet.png"
             alt="Mascota feliz"
             width={400}
             height={400}
-            className="rounded-lg shadow-lg"
+            className=""
           />
         </div>
       </div>

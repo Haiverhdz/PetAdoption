@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import { Providers } from "./providers"; // 👈 usamos el wrapper
+import { Providers } from "./providers"; 
+
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -27,7 +28,7 @@ export default function RootLayout({
       >
         <Providers>
           <Header />
-          <main className="flex-grow flex flex-col justify-center max-w-6xl mx-auto p-4">
+          <main className="page-content flex-grow flex flex-col justify-center max-w-6xl mx-auto p-4">
             {children}
           </main>
           <Footer />

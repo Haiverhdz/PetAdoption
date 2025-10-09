@@ -41,7 +41,7 @@ export default function PetDetailPage() {
 
   return (
     <section className="max-w-4xl mx-auto py-12 px-6">
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+      <div className="bg-white/60 shadow-lg rounded-lg overflow-hidden">
         <Image
           src={pet.image}
           alt={pet.name}

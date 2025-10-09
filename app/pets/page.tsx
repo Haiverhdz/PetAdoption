@@ -55,7 +55,6 @@ export default function MascotasPage() {
         Mascotas disponibles para adopción
       </h1>
 
-      {/* Buscador */}
       <div className="flex justify-center mb-8">
         <input
           type="text"
@@ -69,7 +68,6 @@ export default function MascotasPage() {
         />
       </div>
 
-      {/* Grid de mascotas */}
       <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-8">
         {loading
           ? Array.from({ length: 6 }).map((_, index) => (
@@ -90,7 +88,7 @@ export default function MascotasPage() {
           : displayedPets.map((pet) => (
               <div
                 key={pet.id}
-                className="bg-white shadow-lg rounded-lg overflow-hidden"
+                className="bg-white/60 shadow-lg rounded-lg overflow-hidden"
               >
                 <Image
                   src={pet.image}
@@ -104,14 +102,14 @@ export default function MascotasPage() {
                   <p className="text-gray-500">
                     {pet.breed} - {pet.age}
                   </p>
-                  <p className="mt-2 text-gray-600 text-sm bg-gray-50 p-2 rounded">
+                  <p className="mt-2 text-gray-600 text-sm bg-white/20 p-2 rounded">
                     {pet.description}
                   </p>
                   <p className="mt-2 text-gray-500 text-sm">
                     Vacunas: {pet.vaccines?.join(", ") || "No disponible"}
                   </p>
                   <Link href={`/pets/${pet.id}`}>
-                    <button className="mt-2 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition">
+                    <button className="mt-2 bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition">
                       Ver más
                     </button>
                   </Link>
@@ -120,7 +118,6 @@ export default function MascotasPage() {
             ))}
       </div>
 
-      {/* Paginación */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-8 gap-2">
           <button

@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function AboutPage() {
   return (
-    <section className="bg-gray-50 py-16">
+    <section className="bg-white/30 rounded-xl py-16">
       <div className="max-w-6xl mx-auto px-6">
         <h1 className="text-4xl md:text-5xl font-bold text-blue-700 text-center mb-6">
           Sobre Nosotros
@@ -42,7 +42,7 @@ export default function AboutPage() {
           Nuestros valores
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+          <div className="bg-white/20 p-6 rounded-xl shadow hover:shadow-lg transition">
             <h3 className="text-xl font-semibold text-blue-600 mb-2">
               Compasión
             </h3>
@@ -51,7 +51,7 @@ export default function AboutPage() {
               cuidado que merece.
             </p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+          <div className="bg-white/20 p-6 rounded-xl shadow hover:shadow-lg transition">
             <h3 className="text-xl font-semibold text-blue-600 mb-2">
               Responsabilidad
             </h3>
@@ -60,7 +60,7 @@ export default function AboutPage() {
               durante el proceso.
             </p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+          <div className="bg-white/20 p-6 rounded-xl shadow hover:shadow-lg transition">
             <h3 className="text-xl font-semibold text-blue-600 mb-2">
               Transparencia
             </h3>
@@ -81,7 +81,9 @@ export default function AboutPage() {
           </p>
           <a
             href="/contact"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition"
+            className="mt-6 px-6 py-3 rounded-lg text-white font-semibold shadow-lg 
+            bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-400 
+            hover:scale-105 hover:shadow-xl transition-all duration-300"
           >
             Contáctanos
           </a>

@@ -24,3 +24,13 @@ h1, h2, h3, h4, h5, h6 {
 p {
   @apply text-gray-700 leading-relaxed;
 }
+
+.page-content {
+  margin-top: 80px;
+}
+
+body {
+  font-family: "Chalkduster", "Outfit", "Poppins", sans-serif;
+  background: radial-gradient(circle at top left, #c4e1ea, #728c78bd, #fff4dbdf);
+  background-attachment: fixed;
+}
