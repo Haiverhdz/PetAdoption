@@ -111,7 +111,7 @@ export default function Header() {
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Abrir menú"
-          className="md:hidden flex flex-col gap-1 focus:outline-none"
+          className="md:hidden flex justify-center flex-col gap-1 focus:outline-none"
         >
           <span
             className={`w-6 h-0.5 bg-white transition ${
@@ -132,7 +132,7 @@ export default function Header() {
       </div>
 
       {menuOpen && (
-        <nav className="md:hidden bg-[radial-gradient(circle_at_top_left,_#9fc7d3,_#5c7760,_#f5e9b5)] rounded-lg px-4 py-3 flex flex-col gap-4 animate-fadeIn">
+        <nav className="md:hidden bg-[radial-gradient(circle_at_top_left,_#9fc7d3,_#5c7760,_#f5e9b5)]  rounded-lg px-4 py-3 flex flex-col gap-4 animate-fadeIn">
           {status === "loading" ? (
             <span className="font-medium">Cargando...</span>
           ) : session?.user ? (
