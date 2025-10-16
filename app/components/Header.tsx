@@ -80,7 +80,7 @@ export default function Header() {
     w-[95%] md:w-[1120px] h-[70px] 
     rounded-2xl bg-white/20 backdrop-blur-md shadow-lg 
     text-blue-700 transition-all duration-300 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 gap-6 flex items-center justify-between h-full">
         <Link href="/" className="flex items-center gap-3">
           <Image
             src="/images/logo.PNG"
@@ -88,11 +88,10 @@ export default function Header() {
             width={45}
             height={45}
           />
-          <span className="text-2xl font-bold">PetAdopt</span>
+          <span className="text-2xl  font-bold">PetAdopt</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          {/* 👇 Aquí controlas el “Hola” de primero */}
           {status === "loading" ? (
             <span className="font-medium">Cargando...</span>
           ) : session?.user ? (
@@ -101,7 +100,6 @@ export default function Header() {
             <span className="font-medium">Hola invitado</span>
           )}
 
-          {/* Tus enlaces */}
           <NavLink href="/">Inicio</NavLink>
           <NavLink href="/pets">Mascotas</NavLink>
           <NavLink href="/about">Sobre Nosotros</NavLink>
@@ -111,7 +109,7 @@ export default function Header() {
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Abrir menú"
-          className="md:hidden flex justify-center flex-col gap-1 focus:outline-none"
+          className="md:hidden flex flex-col items-center justify-center gap-1 focus:outline-none p-2"
         >
           <span
             className={`w-6 h-0.5 bg-white transition ${
